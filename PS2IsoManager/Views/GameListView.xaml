@@ -1,0 +1,57 @@
+<UserControl x:Class="PS2IsoManager.Views.GameListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:PS2IsoManager.Converters">
+
+    <UserControl.Resources>
+        <converters:MediaTypeToStringConverter x:Key="MediaTypeConverter"/>
+    </UserControl.Resources>
+
+    <ListBox ItemsSource="{Binding Games}"
+             SelectedItem="{Binding SelectedGame}"
+             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+             VirtualizingPanel.IsVirtualizing="True"
+             VirtualizingPanel.VirtualizationMode="Recycling">
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Media type badge -->
+                    <Border Grid.Column="0" Background="#0F3460" CornerRadius="3"
+                            Padding="6,2" Margin="0,0,10,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Media, Converter={StaticResource MediaTypeConverter}}"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="#88AADD"/>
+                    </Border>
+
+                    <!-- Game name + ID -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding DisplayName}" FontSize="14" FontWeight="Medium"
+                                   TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding GameId}" FontSize="11" Foreground="#8888AA"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+
+                    <!-- Chunk count -->
+                    <TextBlock Grid.Column="2" VerticalAlignment="Center" Margin="10,0"
+                               Foreground="#8888AA" FontSize="12">
+                        <Run Text="{Binding ChunkCount, Mode=OneWay}"/>
+                        <Run Text=" parts"/>
+                    </TextBlock>
+
+                    <!-- CRC -->
+                    <TextBlock Grid.Column="3" Text="{Binding CrcHex}"
+                               VerticalAlignment="Center" FontSize="11"
+                               Foreground="#666688" FontFamily="Consolas"
+                               Margin="0,0,4,0"/>
+                </Grid>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+    </ListBox>
+</UserControl>

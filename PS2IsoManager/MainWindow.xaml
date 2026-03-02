@@ -1,0 +1,129 @@
+<Window x:Class="PS2IsoManager.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:PS2IsoManager.ViewModels"
+        xmlns:views="clr-namespace:PS2IsoManager.Views"
+        xmlns:converters="clr-namespace:PS2IsoManager.Converters"
+        Title="PS2 ISO Manager"
+        Width="1100" Height="700"
+        MinWidth="800" MinHeight="500"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanResizeWithGrip"
+        AllowDrop="True"
+        Drop="Window_Drop"
+        DragOver="Window_DragOver">
+
+    <Window.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolVisConverter"/>
+    </Window.Resources>
+
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <Window.InputBindings>
+        <KeyBinding Key="Delete" Command="{Binding DeleteGameCommand}"/>
+        <KeyBinding Key="F2" Command="{Binding RenameGameCommand}"/>
+        <KeyBinding Key="F5" Command="{Binding RefreshCommand}"/>
+        <KeyBinding Key="A" Modifiers="Ctrl" Command="{Binding AddGameCommand}"/>
+    </Window.InputBindings>
+
+    <Border Background="#1A1A2E" CornerRadius="8" BorderBrush="#2A2A4A" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="28"/>
+            </Grid.RowDefinitions>
+
+            <!-- Custom Title Bar -->
+            <Border Grid.Row="0" Background="#16213E" CornerRadius="8,8,0,0"
+                    MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" Margin="12,0">
+                        <Ellipse Width="20" Height="20" Margin="0,0,8,0" VerticalAlignment="Center">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#0F3460" Offset="0"/>
+                                    <GradientStop Color="#E94560" Offset="0.3"/>
+                                    <GradientStop Color="#0F3460" Offset="0.5"/>
+                                    <GradientStop Color="#16213E" Offset="1"/>
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <TextBlock Text="PS2 ISO Manager" VerticalAlignment="Center"
+                                   FontSize="14" FontWeight="SemiBold" Foreground="#E0E0E0"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,8,0">
+                        <Button Content="—" Click="MinimizeButton_Click" Width="36" Height="28"
+                                Background="Transparent" FontSize="14" ToolTip="Minimize"/>
+                        <Button x:Name="MaxButton" Content="☐" Click="MaximizeButton_Click" Width="36" Height="28"
+                                Background="Transparent" FontSize="14" ToolTip="Maximize"/>
+                        <Button Content="✕" Click="CloseButton_Click" Width="36" Height="28"
+                                Background="Transparent" FontSize="14" ToolTip="Close"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Toolbar -->
+            <Border Grid.Row="1" Background="#16213E" Padding="8,6" BorderBrush="#2A2A4A"
+                    BorderThickness="0,0,0,1">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Select Folder" Command="{Binding SelectFolderCommand}"
+                            Margin="0,0,6,0" ToolTip="Select USB drive or OPL folder"/>
+                    <Button Content="Add Game (Ctrl+A)" Command="{Binding AddGameCommand}"
+                            Margin="0,0,6,0" ToolTip="Add a PS2 ISO"/>
+                    <Button Content="Refresh (F5)" Command="{Binding RefreshCommand}"
+                            Margin="0,0,6,0"/>
+
+                    <Border Width="1" Background="#2A2A4A" Margin="6,2"/>
+
+                    <Button Content="Download All Art" Command="{Binding DownloadAllArtCommand}"
+                            Margin="6,0,0,0"/>
+
+                    <Border Background="#0F3460" CornerRadius="4" Padding="10,4" Margin="12,0,0,0"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding HasUsbPath, Converter={StaticResource BoolVisConverter}}">
+                        <TextBlock Text="{Binding UsbPath}" Foreground="#88AADD" FontSize="12"
+                                   FontFamily="Consolas" MaxWidth="500" TextTrimming="CharacterEllipsis"/>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- Main Content -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" MinWidth="300"/>
+                    <ColumnDefinition Width="3"/>
+                    <ColumnDefinition Width="*" MinWidth="260" MaxWidth="380"/>
+                </Grid.ColumnDefinitions>
+
+                <views:GameListView Grid.Column="0" DataContext="{Binding}"/>
+
+                <GridSplitter Grid.Column="1" Width="3" Background="#2A2A4A"
+                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+
+                <views:GameDetailView Grid.Column="2" DataContext="{Binding}"/>
+            </Grid>
+
+            <!-- Status Bar -->
+            <Border Grid.Row="3" Background="#16213E" CornerRadius="0,0,8,8"
+                    BorderBrush="#2A2A4A" BorderThickness="0,1,0,0">
+                <Grid Margin="12,0">
+                    <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center"
+                               FontSize="12" Foreground="#8888AA"/>
+                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
+                               FontSize="11" Foreground="#666688">
+                        <Run Text="{Binding Games.Count, Mode=OneWay}"/>
+                        <Run Text=" game(s)"/>
+                    </TextBlock>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>
