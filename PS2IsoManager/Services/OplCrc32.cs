@@ -27,7 +27,8 @@ public static class OplCrc32
     public static uint Compute(string gameName)
     {
         // OPL pads the name into a 32-byte null buffer and processes name.Length + 1 bytes
-        var buffer = new byte[32];
+        // Extra byte for null terminator when name is exactly 32 chars
+        var buffer = new byte[33];
         var nameBytes = System.Text.Encoding.ASCII.GetBytes(gameName);
         Array.Copy(nameBytes, buffer, Math.Min(nameBytes.Length, 32));
 
