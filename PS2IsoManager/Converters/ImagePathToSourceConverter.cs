@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IO;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
@@ -8,16 +9,21 @@ public class ImagePathToSourceConverter : IValueConverter
 {
     public object? Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is not string path || string.IsNullOrEmpty(path) || !System.IO.File.Exists(path))
+        if (value is not string path || string.IsNullOrEmpty(path) || !File.Exists(path))
             return null;
 
         try
         {
+            // Load from stream to avoid file locking and WPF URI caching issues
             var bi = new BitmapImage();
             bi.BeginInit();
             bi.CacheOption = BitmapCacheOption.OnLoad;
-            bi.UriSource = new Uri(path, UriKind.Absolute);
-            bi.EndInit();
+            bi.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                bi.StreamSource = fs;
+                bi.EndInit();
+            }
             bi.Freeze();
             return bi;
         }

@@ -1,3 +1,5 @@
+using System.IO;
+using System.Windows.Media.Imaging;
 using PS2IsoManager.Models;
 using PS2IsoManager.Services;
 
@@ -7,11 +9,13 @@ public class GameEntryViewModel : ViewModelBase
 {
     private readonly GameEntry _model;
     private string? _coverPath;
+    private BitmapImage? _coverImage;
 
     public GameEntryViewModel(GameEntry model, string? coverPath = null)
     {
         _model = model;
-        _coverPath = coverPath;
+        if (coverPath != null)
+            SetCoverFromPath(coverPath);
     }
 
     public GameEntry Model => _model;
@@ -74,6 +78,45 @@ public class GameEntryViewModel : ViewModelBase
     public string? CoverPath
     {
         get => _coverPath;
-        set => SetProperty(ref _coverPath, value);
+        set
+        {
+            if (_coverPath != value)
+            {
+                _coverPath = value;
+                OnPropertyChanged();
+                SetCoverFromPath(value);
+            }
+        }
+    }
+
+    public BitmapImage? CoverImage
+    {
+        get => _coverImage;
+        private set => SetProperty(ref _coverImage, value);
+    }
+
+    private void SetCoverFromPath(string? path)
+    {
+        if (string.IsNullOrEmpty(path) || !File.Exists(path))
+        {
+            CoverImage = null;
+            return;
+        }
+
+        try
+        {
+            var bi = new BitmapImage();
+            bi.BeginInit();
+            bi.CacheOption = BitmapCacheOption.OnLoad;
+            bi.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+            bi.UriSource = new Uri(path, UriKind.Absolute);
+            bi.EndInit();
+            bi.Freeze();
+            CoverImage = bi;
+        }
+        catch
+        {
+            CoverImage = null;
+        }
     }
 }

@@ -310,20 +310,23 @@ public class MainViewModel : ViewModelBase
     {
         if (SelectedGame == null) return;
 
+        var game = SelectedGame;
         IsBusy = true;
-        StatusText = $"Downloading cover art for {SelectedGame.GameId}...";
+        StatusText = $"Downloading cover art for {game.GameId}...";
 
         try
         {
-            string? path = await CoverArtService.DownloadCoverAsync(SelectedGame.GameId, UsbPath);
+            var statusProgress = new Progress<string>(s => StatusText = s);
+            string? path = await CoverArtService.DownloadCoverAsync(game.GameId, UsbPath, statusProgress);
             if (path != null)
             {
-                SelectedGame.CoverPath = path;
-                StatusText = $"Cover art downloaded for {SelectedGame.GameId}";
+                game.CoverPath = path;
+                // Binding is directly on GameEntryViewModel.CoverPath so PropertyChanged propagates automatically
+                StatusText = $"Cover art downloaded for {game.GameId}";
             }
             else
             {
-                StatusText = $"No cover art found for {SelectedGame.GameId}";
+                StatusText = $"No cover art found for {game.GameId}";
             }
         }
         catch (Exception ex)
@@ -341,11 +344,16 @@ public class MainViewModel : ViewModelBase
         IsBusy = true;
         int downloaded = 0;
         int total = Games.Count;
+        int skipped = 0;
 
         for (int i = 0; i < Games.Count; i++)
         {
             var game = Games[i];
-            if (!string.IsNullOrEmpty(game.CoverPath)) continue;
+            if (!string.IsNullOrEmpty(game.CoverPath))
+            {
+                skipped++;
+                continue;
+            }
 
             StatusText = $"Downloading art ({i + 1}/{total}): {game.GameId}...";
             try
@@ -355,13 +363,15 @@ public class MainViewModel : ViewModelBase
                 {
                     game.CoverPath = path;
                     downloaded++;
+
+                    // Direct binding on CoverPath propagates automatically
                 }
             }
             catch { /* skip failures */ }
         }
 
         IsBusy = false;
-        StatusText = $"Downloaded {downloaded} cover(s) for {total} game(s)";
+        StatusText = $"Downloaded {downloaded} cover(s), {skipped} already had art, {total - downloaded - skipped} not found";
     }
 
     private void Refresh()

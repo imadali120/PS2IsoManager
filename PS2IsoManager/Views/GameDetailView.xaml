@@ -4,7 +4,6 @@
              xmlns:converters="clr-namespace:PS2IsoManager.Converters">
 
     <UserControl.Resources>
-        <converters:ImagePathToSourceConverter x:Key="ImageConverter"/>
         <converters:MediaTypeToStringConverter x:Key="MediaTypeConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolVisConverter"/>
     </UserControl.Resources>
@@ -20,14 +19,14 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto"
                       Visibility="{Binding HasSelectedGame, Converter={StaticResource BoolVisConverter}}">
             <StackPanel Margin="20">
-                <!-- Cover art -->
+                <!-- Cover art — binds directly to BitmapImage property -->
                 <Border Width="210" Height="300" Background="#0F3460" CornerRadius="6"
                         HorizontalAlignment="Center" Margin="0,0,0,20">
                     <Grid>
                         <TextBlock Text="No Cover Art" HorizontalAlignment="Center"
                                    VerticalAlignment="Center" Foreground="#666688"
                                    FontSize="13"/>
-                        <Image Source="{Binding SelectedGame.CoverPath, Converter={StaticResource ImageConverter}}"
+                        <Image Source="{Binding SelectedGame.CoverImage}"
                                Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality">
                             <Image.Clip>
                                 <RectangleGeometry Rect="0,0,210,300" RadiusX="6" RadiusY="6"/>
