@@ -27,7 +27,7 @@ No more hunting for ancient, sketchy USBUtil downloads. This is open-source, bui
 ## Screenshot
 
 <p align="center">
-  <img src="images/main-window.png" alt="PS2 ISO Manager — Main Window" width="900" style="border-radius: 8px;"/>
+  <img src="images/Screenshot 2026-03-03 012531.png" alt="PS2 ISO Manager — Main Window" width="900" style="border-radius: 8px;"/>
 </p>
 
 ## Features
