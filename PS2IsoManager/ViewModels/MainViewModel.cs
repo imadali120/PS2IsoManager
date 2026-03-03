@@ -152,7 +152,7 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public async Task AddSingleGame(string isoPath)
+    public Task AddSingleGame(string isoPath)
     {
         // Extract game ID
         string? gameId = Iso9660Reader.ExtractGameId(isoPath);
@@ -161,25 +161,15 @@ public class MainViewModel : ViewModelBase
             // Prompt for manual entry
             gameId = PromptForInput("Game ID Not Found",
                 "Could not extract Game ID from ISO.\nPlease enter it manually (e.g. SLUS_202.65):");
-            if (string.IsNullOrWhiteSpace(gameId)) return;
+            if (string.IsNullOrWhiteSpace(gameId)) return Task.CompletedTask;
         }
 
-        // Look up the official game name from PSX Data Center
-        StatusText = $"Looking up game name for {gameId}...";
         string defaultName = Path.GetFileNameWithoutExtension(isoPath);
         if (defaultName.Length > 32) defaultName = defaultName.Substring(0, 32);
 
-        try
-        {
-            string? lookedUpName = await GameNameLookupService.LookupAsync(gameId);
-            if (!string.IsNullOrEmpty(lookedUpName))
-                defaultName = lookedUpName;
-        }
-        catch { /* fall back to filename */ }
-
         string? displayName = PromptForInput("Game Name",
             $"Enter display name for the game (max 32 characters):", defaultName);
-        if (string.IsNullOrWhiteSpace(displayName)) return;
+        if (string.IsNullOrWhiteSpace(displayName)) return Task.CompletedTask;
         if (displayName.Length > 32) displayName = displayName.Substring(0, 32);
 
         // Check for duplicate
@@ -187,7 +177,7 @@ public class MainViewModel : ViewModelBase
         {
             MessageBox.Show($"Game {gameId} already exists.", "Duplicate",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
-            return;
+            return Task.CompletedTask;
         }
 
         // Detect media type
@@ -239,7 +229,7 @@ public class MainViewModel : ViewModelBase
         if (result != true)
         {
             StatusText = "Split cancelled.";
-            return;
+            return Task.CompletedTask;
         }
 
         // Register in ul.cfg
@@ -261,6 +251,7 @@ public class MainViewModel : ViewModelBase
         SelectedGame = vm;
 
         StatusText = $"Added: {displayName} ({gameId}) - {chunkCount} part(s)";
+        return Task.CompletedTask;
     }
 
     private void DeleteGame()
