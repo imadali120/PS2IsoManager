@@ -193,12 +193,13 @@ public class MainViewModel : ViewModelBase
 
         byte chunkCount = 0;
         var progress = new Progress<double>(p => progressDlg.UpdateProgress(p));
+        var statusProgress = new Progress<string>(s => progressDlg.SetMessage(s));
 
         var splitTask = Task.Run(async () =>
         {
             chunkCount = await IsoSplitterService.SplitAsync(
                 isoPath, UsbPath, displayName, gameId,
-                progress, progressDlg.CancellationToken);
+                progress, progressDlg.CancellationToken, statusProgress);
         });
 
         progressDlg.Loaded += async (_, _) =>

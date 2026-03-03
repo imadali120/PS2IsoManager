@@ -13,7 +13,8 @@ public static class IsoSplitterService
         string gameName,
         string gameId,
         IProgress<double>? progress = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        IProgress<string>? statusProgress = null)
     {
         string crcHex = OplCrc32.ComputeHex(gameName);
         var fi = new FileInfo(isoPath);
@@ -24,6 +25,7 @@ public static class IsoSplitterService
         // This lets FAT32 find contiguous space for each file and avoids
         // fragmentation from interleaved allocations.
         var chunkPaths = new string[chunkCount];
+        statusProgress?.Report($"Allocating {chunkCount} chunk(s) on disk...");
         for (int part = 0; part < chunkCount; part++)
         {
             ct.ThrowIfCancellationRequested();
@@ -35,6 +37,7 @@ public static class IsoSplitterService
             using var prealloc = new FileStream(chunkPaths[part], FileMode.Create, FileAccess.Write, FileShare.None);
             prealloc.SetLength(thisChunkSize);
         }
+        statusProgress?.Report("Writing data...");
 
         // Phase 2: Write data into the pre-allocated files
         var buffer = new byte[BufferSize];
