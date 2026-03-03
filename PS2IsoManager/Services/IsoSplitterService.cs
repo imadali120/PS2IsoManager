@@ -20,6 +20,23 @@ public static class IsoSplitterService
         long totalSize = fi.Length;
         byte chunkCount = (byte)Math.Ceiling((double)totalSize / ChunkSize);
 
+        // Phase 1: Pre-allocate ALL chunk files before writing any data.
+        // This lets FAT32 find contiguous space for each file and avoids
+        // fragmentation from interleaved allocations.
+        var chunkPaths = new string[chunkCount];
+        for (int part = 0; part < chunkCount; part++)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            string chunkName = $"ul.{crcHex}.{gameId}.{part:X2}";
+            chunkPaths[part] = Path.Combine(outputDir, chunkName);
+
+            long thisChunkSize = Math.Min(ChunkSize, totalSize - (long)part * ChunkSize);
+            using var prealloc = new FileStream(chunkPaths[part], FileMode.Create, FileAccess.Write, FileShare.None);
+            prealloc.SetLength(thisChunkSize);
+        }
+
+        // Phase 2: Write data into the pre-allocated files
         var buffer = new byte[BufferSize];
         long totalBytesRead = 0;
 
@@ -29,14 +46,9 @@ public static class IsoSplitterService
         {
             ct.ThrowIfCancellationRequested();
 
-            string chunkName = $"ul.{crcHex}.{gameId}.{part:X2}";
-            string chunkPath = Path.Combine(outputDir, chunkName);
-
             long chunkSize = Math.Min(ChunkSize, totalSize - totalBytesRead);
 
-            using var output = new FileStream(chunkPath, FileMode.Create, FileAccess.Write, FileShare.None, BufferSize, FileOptions.SequentialScan);
-            // Pre-allocate the full chunk size so FAT32 assigns contiguous sectors
-            output.SetLength(chunkSize);
+            using var output = new FileStream(chunkPaths[part], FileMode.Open, FileAccess.Write, FileShare.None, BufferSize, FileOptions.SequentialScan);
 
             long bytesRemaining = chunkSize;
             while (bytesRemaining > 0)
