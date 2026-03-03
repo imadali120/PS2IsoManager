@@ -131,13 +131,7 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    public Task AddSingleGame(string isoPath)
-    {
-        AddSingleGameCore(isoPath);
-        return Task.CompletedTask;
-    }
-
-    private void AddSingleGameCore(string isoPath)
+    public async Task AddSingleGame(string isoPath)
     {
         // Extract game ID
         string? gameId = Iso9660Reader.ExtractGameId(isoPath);
@@ -149,9 +143,19 @@ public class MainViewModel : ViewModelBase
             if (string.IsNullOrWhiteSpace(gameId)) return;
         }
 
-        // Get display name
+        // Look up the official game name from PSX Data Center
+        StatusText = $"Looking up game name for {gameId}...";
         string defaultName = Path.GetFileNameWithoutExtension(isoPath);
         if (defaultName.Length > 32) defaultName = defaultName.Substring(0, 32);
+
+        try
+        {
+            string? lookedUpName = await GameNameLookupService.LookupAsync(gameId);
+            if (!string.IsNullOrEmpty(lookedUpName))
+                defaultName = lookedUpName;
+        }
+        catch { /* fall back to filename */ }
+
         string? displayName = PromptForInput("Game Name",
             $"Enter display name for the game (max 32 characters):", defaultName);
         if (string.IsNullOrWhiteSpace(displayName)) return;
