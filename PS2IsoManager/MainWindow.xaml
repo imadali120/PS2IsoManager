@@ -117,12 +117,47 @@
                     BorderBrush="#2A2A4A" BorderThickness="0,1,0,0">
                 <Grid Margin="12,0">
                     <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center"
-                               FontSize="12" Foreground="#8888AA"/>
-                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
-                               FontSize="11" Foreground="#666688">
-                        <Run Text="{Binding Games.Count, Mode=OneWay}"/>
-                        <Run Text=" game(s)"/>
-                    </TextBlock>
+                               FontSize="12" Foreground="#8888AA" MaxWidth="500"
+                               TextTrimming="CharacterEllipsis" HorizontalAlignment="Left"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
+                                VerticalAlignment="Center">
+                        <!-- DVD count -->
+                        <Border Background="#0F3460" CornerRadius="3" Padding="6,2" Margin="4,0">
+                            <TextBlock FontSize="11" Foreground="#88AADD">
+                                <Run Text="DVD "/>
+                                <Run Text="{Binding DvdCount, Mode=OneWay}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                        </Border>
+
+                        <!-- CD count -->
+                        <Border Background="#0F3460" CornerRadius="3" Padding="6,2" Margin="4,0">
+                            <TextBlock FontSize="11" Foreground="#88AADD">
+                                <Run Text="CD "/>
+                                <Run Text="{Binding CdCount, Mode=OneWay}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                        </Border>
+
+                        <!-- Separator -->
+                        <Border Width="1" Background="#2A2A4A" Margin="4,4"/>
+
+                        <!-- Total size -->
+                        <Border Background="#0F3460" CornerRadius="3" Padding="6,2" Margin="4,0">
+                            <TextBlock FontSize="11" Foreground="#88AADD">
+                                <Run Text="{Binding EstimatedSize, Mode=OneWay}" FontWeight="SemiBold"/>
+                            </TextBlock>
+                        </Border>
+
+                        <!-- Separator -->
+                        <Border Width="1" Background="#2A2A4A" Margin="4,4"/>
+
+                        <!-- Game count -->
+                        <TextBlock FontSize="11" Foreground="#666688" VerticalAlignment="Center"
+                                   Margin="4,0,0,0">
+                            <Run Text="{Binding Games.Count, Mode=OneWay}" FontWeight="SemiBold"/>
+                            <Run Text=" game(s)"/>
+                        </TextBlock>
+                    </StackPanel>
                 </Grid>
             </Border>
         </Grid>

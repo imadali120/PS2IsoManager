@@ -19,6 +19,7 @@ public class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         Games = new ObservableCollection<GameEntryViewModel>();
+        Games.CollectionChanged += (_, _) => RefreshStats();
 
         SelectFolderCommand = new RelayCommand(SelectFolder);
         AddGameCommand = new RelayCommand(AddGame, () => !IsBusy && !string.IsNullOrEmpty(UsbPath));
@@ -73,6 +74,26 @@ public class MainViewModel : ViewModelBase
     {
         get => _isBusy;
         set => SetProperty(ref _isBusy, value);
+    }
+
+    public int CdCount => Games.Count(g => g.Media == Models.MediaType.CD);
+    public int DvdCount => Games.Count(g => g.Media == Models.MediaType.DVD);
+    public int TotalParts => Games.Sum(g => (int)g.ChunkCount);
+    public string EstimatedSize
+    {
+        get
+        {
+            double sizeGiB = TotalParts; // Each part is ~1 GiB
+            return sizeGiB < 1 ? "0 GiB" : $"~{sizeGiB:F0} GiB";
+        }
+    }
+
+    private void RefreshStats()
+    {
+        OnPropertyChanged(nameof(CdCount));
+        OnPropertyChanged(nameof(DvdCount));
+        OnPropertyChanged(nameof(TotalParts));
+        OnPropertyChanged(nameof(EstimatedSize));
     }
 
     public ICommand SelectFolderCommand { get; }

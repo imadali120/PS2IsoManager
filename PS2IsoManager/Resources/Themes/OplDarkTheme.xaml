@@ -150,15 +150,18 @@
     <!-- ListBoxItem Style (OPL game list rows) -->
     <Style TargetType="ListBoxItem">
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-        <Setter Property="Padding" Value="12,0"/>
-        <Setter Property="Height" Value="48"/>
+        <Setter Property="Padding" Value="12,4"/>
+        <Setter Property="MinHeight" Value="60"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Border x:Name="border" Background="Transparent"
                             Padding="{TemplateBinding Padding}"
-                            BorderThickness="3,0,0,0" BorderBrush="Transparent">
+                            BorderThickness="3,0,0,1" BorderBrush="#11FFFFFF">
+                        <Border.RenderTransform>
+                            <TranslateTransform x:Name="slideTransform" X="0"/>
+                        </Border.RenderTransform>
                         <ContentPresenter VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -167,8 +170,24 @@
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="border" Property="Background" Value="#33E94560"/>
+                            <Setter TargetName="border" Property="BorderThickness" Value="3,0,0,1"/>
                             <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource HighlightBrush}"/>
                         </Trigger>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     From="0" To="1" Duration="0:0:0.25"/>
+                                    <DoubleAnimation Storyboard.TargetName="slideTransform"
+                                                     Storyboard.TargetProperty="X"
+                                                     From="-20" To="0" Duration="0:0:0.3">
+                                        <DoubleAnimation.EasingFunction>
+                                            <CubicEase EasingMode="EaseOut"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

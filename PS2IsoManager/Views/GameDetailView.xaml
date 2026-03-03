@@ -6,33 +6,67 @@
     <UserControl.Resources>
         <converters:MediaTypeToStringConverter x:Key="MediaTypeConverter"/>
         <converters:BoolToVisibilityConverter x:Key="BoolVisConverter"/>
+
+        <CubicEase x:Key="EaseOut" EasingMode="EaseOut"/>
     </UserControl.Resources>
 
-    <Grid>
+    <Grid ClipToBounds="True">
+        <!-- Blurred cover art background -->
+        <Image Source="{Binding SelectedGame.CoverImage}" Stretch="UniformToFill"
+               Opacity="0.15" RenderOptions.BitmapScalingMode="LowQuality"
+               VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Image.Effect>
+                <BlurEffect Radius="60"/>
+            </Image.Effect>
+        </Image>
+
+        <!-- Gradient overlay to blend edges -->
+        <Border>
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#CC1A1A2E" Offset="0"/>
+                    <GradientStop Color="#881A1A2E" Offset="0.3"/>
+                    <GradientStop Color="#881A1A2E" Offset="0.7"/>
+                    <GradientStop Color="#CC1A1A2E" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+        </Border>
+
         <!-- No selection placeholder -->
-        <TextBlock Text="Select a game to view details"
-                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                   Foreground="#666688" FontSize="14" FontStyle="Italic"
-                   Visibility="{Binding HasSelectedGame, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}"/>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Visibility="{Binding HasSelectedGame, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}">
+            <TextBlock Text="&#xE7FC;" FontFamily="Segoe MDL2 Assets" FontSize="48"
+                       Foreground="#333355" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+            <TextBlock Text="Select a game to view details"
+                       HorizontalAlignment="Center"
+                       Foreground="#666688" FontSize="14" FontStyle="Italic"/>
+        </StackPanel>
 
         <!-- Detail panel -->
         <ScrollViewer VerticalScrollBarVisibility="Auto"
                       Visibility="{Binding HasSelectedGame, Converter={StaticResource BoolVisConverter}}">
-            <StackPanel Margin="20">
-                <!-- Cover art — binds directly to BitmapImage property -->
-                <Border Width="210" Height="300" Background="#0F3460" CornerRadius="6"
-                        HorizontalAlignment="Center" Margin="0,0,0,20">
-                    <Grid>
-                        <TextBlock Text="No Cover Art" HorizontalAlignment="Center"
-                                   VerticalAlignment="Center" Foreground="#666688"
-                                   FontSize="13"/>
-                        <Image Source="{Binding SelectedGame.CoverImage}"
-                               Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality">
-                            <Image.Clip>
-                                <RectangleGeometry Rect="0,0,210,300" RadiusX="6" RadiusY="6"/>
-                            </Image.Clip>
-                        </Image>
-                    </Grid>
+            <StackPanel x:Name="DetailContent" Margin="20">
+                <!-- Cover art with glow effect -->
+                <Border Width="210" Height="300" CornerRadius="6"
+                        HorizontalAlignment="Center" Margin="0,10,0,20">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#E94560" Opacity="0.4" BlurRadius="24"
+                                          ShadowDepth="0"/>
+                    </Border.Effect>
+                    <Border Background="#0F3460" CornerRadius="6" ClipToBounds="True">
+                        <Grid>
+                            <TextBlock Text="No Cover Art" HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" Foreground="#666688"
+                                       FontSize="13"/>
+                            <Image x:Name="CoverArtImage"
+                                   Source="{Binding SelectedGame.CoverImage}"
+                                   Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality">
+                                <Image.Clip>
+                                    <RectangleGeometry Rect="0,0,210,300" RadiusX="6" RadiusY="6"/>
+                                </Image.Clip>
+                            </Image>
+                        </Grid>
+                    </Border>
                 </Border>
 
                 <!-- Game info -->
@@ -41,7 +75,7 @@
                            HorizontalAlignment="Center" TextAlignment="Center"
                            Margin="0,0,0,8"/>
 
-                <Border Background="#16213E" CornerRadius="6" Padding="16" Margin="0,8">
+                <Border Background="#AA16213E" CornerRadius="6" Padding="16" Margin="0,8">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
