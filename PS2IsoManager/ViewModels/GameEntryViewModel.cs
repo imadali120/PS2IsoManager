@@ -73,6 +73,21 @@ public class GameEntryViewModel : ViewModelBase
         }
     }
 
+    public bool IsDirectIso => _model.Source == Models.GameSource.Iso;
+
+    public string? IsoFileName
+    {
+        get => _model.IsoFileName;
+        set
+        {
+            if (_model.IsoFileName != value)
+            {
+                _model.IsoFileName = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public string CrcHex => OplCrc32.ComputeHex(DisplayName);
 
     public string? CoverPath

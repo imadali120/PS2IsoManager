@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Win32;
@@ -11,6 +12,9 @@ namespace PS2IsoManager.ViewModels;
 
 public class MainViewModel : ViewModelBase
 {
+    private const long Fat32MaxFileSize = 4_294_967_295; // 4 GiB - 1
+    private static readonly Regex IsoFileNameRegex = new(@"^([A-Z]{4}[_-]\d{3}\.\d{2})\.(.+)\.iso$", RegexOptions.IgnoreCase);
+
     private string _usbPath = string.Empty;
     private GameEntryViewModel? _selectedGame;
     private string _statusText = "Ready";
@@ -123,16 +127,56 @@ public class MainViewModel : ViewModelBase
         Games.Clear();
         SelectedGame = null;
 
+        // Load ul.cfg (split) games
         string ulCfgPath = Path.Combine(UsbPath, "ul.cfg");
         var entries = UlCfgService.ReadAll(ulCfgPath);
+        var loadedGameIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var entry in entries)
         {
+            entry.Source = GameSource.UlCfg;
             string? coverPath = CoverArtService.FindExistingCover(entry.GameId, UsbPath);
             Games.Add(new GameEntryViewModel(entry, coverPath));
+            loadedGameIds.Add(entry.GameId);
         }
 
+        // Load direct ISO games from /DVD and /CD
+        ScanIsoFolder("DVD", MediaType.DVD, loadedGameIds);
+        ScanIsoFolder("CD", MediaType.CD, loadedGameIds);
+
         StatusText = $"Loaded {Games.Count} game(s) from {UsbPath}";
+    }
+
+    private void ScanIsoFolder(string folderName, MediaType mediaType, HashSet<string> loadedGameIds)
+    {
+        string folderPath = Path.Combine(UsbPath, folderName);
+        if (!Directory.Exists(folderPath)) return;
+
+        foreach (string filePath in Directory.EnumerateFiles(folderPath, "*.iso"))
+        {
+            string fileName = Path.GetFileName(filePath);
+            var match = IsoFileNameRegex.Match(fileName);
+            if (!match.Success) continue;
+
+            string gameId = match.Groups[1].Value.ToUpperInvariant();
+            string displayName = match.Groups[2].Value;
+
+            if (loadedGameIds.Contains(gameId)) continue;
+
+            var entry = new GameEntry
+            {
+                DisplayName = displayName,
+                GameId = gameId,
+                ChunkCount = 1,
+                Media = mediaType,
+                Source = GameSource.Iso,
+                IsoFileName = fileName
+            };
+
+            string? coverPath = CoverArtService.FindExistingCover(gameId, UsbPath);
+            Games.Add(new GameEntryViewModel(entry, coverPath));
+            loadedGameIds.Add(gameId);
+        }
     }
 
     private async void AddGame()
@@ -172,8 +216,8 @@ public class MainViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(displayName)) return Task.CompletedTask;
         if (displayName.Length > 32) displayName = displayName.Substring(0, 32);
 
-        // Check for duplicate
-        if (Games.Any(g => g.GameId == gameId))
+        // Check for duplicate (both ul.cfg and direct ISO games)
+        if (Games.Any(g => g.GameId.Equals(gameId, StringComparison.OrdinalIgnoreCase)))
         {
             MessageBox.Show($"Game {gameId} already exists.", "Duplicate",
                 MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -183,67 +227,130 @@ public class MainViewModel : ViewModelBase
         // Detect media type
         var mediaType = Iso9660Reader.DetectMediaType(isoPath);
 
-        // Show progress dialog and split
+        // Check file size to decide: direct copy vs split
+        var fileInfo = new FileInfo(isoPath);
+        bool useDirectCopy = fileInfo.Length <= Fat32MaxFileSize;
+
+        // Show progress dialog
         var progressDlg = new ProgressDialog();
         progressDlg.Owner = Application.Current.MainWindow;
-        progressDlg.SetMessage($"Splitting: {displayName}");
 
         IsBusy = true;
-        StatusText = $"Splitting {Path.GetFileName(isoPath)}...";
-
+        string? isoFileName = null;
         byte chunkCount = 0;
-        var progress = new Progress<double>(p => progressDlg.UpdateProgress(p));
-        var statusProgress = new Progress<string>(s => progressDlg.SetMessage(s));
 
-        var splitTask = Task.Run(async () =>
+        if (useDirectCopy)
         {
-            chunkCount = await IsoSplitterService.SplitAsync(
-                isoPath, UsbPath, displayName, gameId,
-                progress, progressDlg.CancellationToken, statusProgress);
-        });
+            progressDlg.SetMessage($"Copying: {displayName}");
+            StatusText = $"Copying {Path.GetFileName(isoPath)}...";
 
-        progressDlg.Loaded += async (_, _) =>
+            var progress = new Progress<double>(p => progressDlg.UpdateProgress(p));
+            var statusProgress = new Progress<string>(s => progressDlg.SetMessage(s));
+
+            var copyTask = Task.Run(async () =>
+            {
+                isoFileName = await IsoSplitterService.CopyIsoAsync(
+                    isoPath, UsbPath, displayName, gameId, mediaType,
+                    progress, progressDlg.CancellationToken, statusProgress);
+            });
+
+            progressDlg.Loaded += async (_, _) =>
+            {
+                try
+                {
+                    await copyTask;
+                    progressDlg.CloseDialog();
+                }
+                catch (OperationCanceledException)
+                {
+                    // Clean up partial file
+                    if (isoFileName != null)
+                        IsoSplitterService.DeleteIso(UsbPath, isoFileName, mediaType);
+                    progressDlg.CloseDialog();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error copying ISO: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    progressDlg.CloseDialog();
+                }
+            };
+        }
+        else
         {
-            try
+            progressDlg.SetMessage($"Splitting: {displayName}");
+            StatusText = $"Splitting {Path.GetFileName(isoPath)}...";
+
+            var progress = new Progress<double>(p => progressDlg.UpdateProgress(p));
+            var statusProgress = new Progress<string>(s => progressDlg.SetMessage(s));
+
+            var splitTask = Task.Run(async () =>
             {
-                await splitTask;
-                progressDlg.CloseDialog();
-            }
-            catch (OperationCanceledException)
+                chunkCount = await IsoSplitterService.SplitAsync(
+                    isoPath, UsbPath, displayName, gameId,
+                    progress, progressDlg.CancellationToken, statusProgress);
+            });
+
+            progressDlg.Loaded += async (_, _) =>
             {
-                // Clean up partial chunks
-                if (chunkCount > 0)
-                    IsoSplitterService.DeleteChunks(UsbPath, displayName, gameId, chunkCount);
-                progressDlg.CloseDialog();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error splitting ISO: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                progressDlg.CloseDialog();
-            }
-        };
+                try
+                {
+                    await splitTask;
+                    progressDlg.CloseDialog();
+                }
+                catch (OperationCanceledException)
+                {
+                    if (chunkCount > 0)
+                        IsoSplitterService.DeleteChunks(UsbPath, displayName, gameId, chunkCount);
+                    progressDlg.CloseDialog();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error splitting ISO: {ex.Message}", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    progressDlg.CloseDialog();
+                }
+            };
+        }
 
         bool? result = progressDlg.ShowDialog();
         IsBusy = false;
 
         if (result != true)
         {
-            StatusText = "Split cancelled.";
+            StatusText = useDirectCopy ? "Copy cancelled." : "Split cancelled.";
             return Task.CompletedTask;
         }
 
-        // Register in ul.cfg
-        var entry = new GameEntry
-        {
-            DisplayName = displayName,
-            GameId = gameId,
-            ChunkCount = chunkCount,
-            Media = mediaType
-        };
+        GameEntry entry;
 
-        string ulCfgPath = Path.Combine(UsbPath, "ul.cfg");
-        UlCfgService.AppendEntry(ulCfgPath, entry);
+        if (useDirectCopy)
+        {
+            entry = new GameEntry
+            {
+                DisplayName = displayName,
+                GameId = gameId,
+                ChunkCount = 1,
+                Media = mediaType,
+                Source = GameSource.Iso,
+                IsoFileName = isoFileName
+            };
+            // No ul.cfg entry for direct ISOs
+        }
+        else
+        {
+            entry = new GameEntry
+            {
+                DisplayName = displayName,
+                GameId = gameId,
+                ChunkCount = chunkCount,
+                Media = mediaType,
+                Source = GameSource.UlCfg
+            };
+
+            string ulCfgPath = Path.Combine(UsbPath, "ul.cfg");
+            UlCfgService.AppendEntry(ulCfgPath, entry);
+        }
 
         // Add to UI
         string? coverPath = CoverArtService.FindExistingCover(gameId, UsbPath);
@@ -251,7 +358,9 @@ public class MainViewModel : ViewModelBase
         Games.Add(vm);
         SelectedGame = vm;
 
-        StatusText = $"Added: {displayName} ({gameId}) - {chunkCount} part(s)";
+        string action = useDirectCopy ? "Copied" : "Split";
+        string detail = useDirectCopy ? "ISO" : $"{chunkCount} part(s)";
+        StatusText = $"{action}: {displayName} ({gameId}) - {detail}";
         return Task.CompletedTask;
     }
 
@@ -259,21 +368,33 @@ public class MainViewModel : ViewModelBase
     {
         if (SelectedGame == null) return;
 
+        string deleteDetail = SelectedGame.IsDirectIso
+            ? "This will delete the ISO file."
+            : "This will remove the ul.cfg entry and all chunk files.";
+
         var result = MessageBox.Show(
-            $"Delete \"{SelectedGame.DisplayName}\" ({SelectedGame.GameId})?\n\nThis will remove the ul.cfg entry and all chunk files.",
+            $"Delete \"{SelectedGame.DisplayName}\" ({SelectedGame.GameId})?\n\n{deleteDetail}",
             "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
         if (result != MessageBoxResult.Yes) return;
 
         try
         {
-            // Delete chunk files
-            IsoSplitterService.DeleteChunks(UsbPath, SelectedGame.DisplayName,
-                SelectedGame.GameId, SelectedGame.ChunkCount);
+            if (SelectedGame.IsDirectIso)
+            {
+                // Delete the ISO file
+                IsoSplitterService.DeleteIso(UsbPath, SelectedGame.IsoFileName!, SelectedGame.Media);
+            }
+            else
+            {
+                // Delete chunk files
+                IsoSplitterService.DeleteChunks(UsbPath, SelectedGame.DisplayName,
+                    SelectedGame.GameId, SelectedGame.ChunkCount);
 
-            // Remove from ul.cfg
-            string ulCfgPath = Path.Combine(UsbPath, "ul.cfg");
-            UlCfgService.DeleteEntry(ulCfgPath, SelectedGame.GameId);
+                // Remove from ul.cfg
+                string ulCfgPath = Path.Combine(UsbPath, "ul.cfg");
+                UlCfgService.DeleteEntry(ulCfgPath, SelectedGame.GameId);
+            }
 
             string name = SelectedGame.DisplayName;
             Games.Remove(SelectedGame);
@@ -303,13 +424,23 @@ public class MainViewModel : ViewModelBase
         {
             string oldName = SelectedGame.DisplayName;
 
-            // Rename chunk files (CRC changes with name)
-            IsoSplitterService.RenameChunks(UsbPath, oldName, newName,
-                SelectedGame.GameId, SelectedGame.ChunkCount);
+            if (SelectedGame.IsDirectIso)
+            {
+                // Rename the ISO file
+                string newFileName = $"{SelectedGame.GameId}.{newName}.iso";
+                IsoSplitterService.RenameIso(UsbPath, SelectedGame.IsoFileName!, newFileName, SelectedGame.Media);
+                SelectedGame.IsoFileName = newFileName;
+            }
+            else
+            {
+                // Rename chunk files (CRC changes with name)
+                IsoSplitterService.RenameChunks(UsbPath, oldName, newName,
+                    SelectedGame.GameId, SelectedGame.ChunkCount);
 
-            // Update ul.cfg
-            string ulCfgPath = Path.Combine(UsbPath, "ul.cfg");
-            UlCfgService.RenameEntry(ulCfgPath, SelectedGame.GameId, newName);
+                // Update ul.cfg
+                string ulCfgPath = Path.Combine(UsbPath, "ul.cfg");
+                UlCfgService.RenameEntry(ulCfgPath, SelectedGame.GameId, newName);
+            }
 
             // Update VM
             SelectedGame.DisplayName = newName;

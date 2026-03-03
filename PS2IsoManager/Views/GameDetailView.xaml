@@ -97,12 +97,21 @@
                                    Text="{Binding SelectedGame.Media, Converter={StaticResource MediaTypeConverter}}"
                                    Margin="12,4"/>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Parts:" Foreground="#8888AA" Margin="0,4"/>
-                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedGame.ChunkCount}" Margin="12,4"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Parts:" Foreground="#8888AA" Margin="0,4"
+                                   Visibility="{Binding SelectedGame.IsDirectIso, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedGame.ChunkCount}" Margin="12,4"
+                                   Visibility="{Binding SelectedGame.IsDirectIso, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}"/>
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="CRC32:" Foreground="#8888AA" Margin="0,4"/>
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Format:" Foreground="#8888AA" Margin="0,4"
+                                   Visibility="{Binding SelectedGame.IsDirectIso, Converter={StaticResource BoolVisConverter}}"/>
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="ISO (direct)" Margin="12,4"
+                                   Visibility="{Binding SelectedGame.IsDirectIso, Converter={StaticResource BoolVisConverter}}"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="CRC32:" Foreground="#8888AA" Margin="0,4"
+                                   Visibility="{Binding SelectedGame.IsDirectIso, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}"/>
                         <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedGame.CrcHex}"
-                                   FontFamily="Consolas" Margin="12,4"/>
+                                   FontFamily="Consolas" Margin="12,4"
+                                   Visibility="{Binding SelectedGame.IsDirectIso, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}"/>
                     </Grid>
                 </Border>
 

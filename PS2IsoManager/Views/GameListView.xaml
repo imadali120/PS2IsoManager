@@ -5,6 +5,7 @@
 
     <UserControl.Resources>
         <converters:MediaTypeToStringConverter x:Key="MediaTypeConverter"/>
+        <converters:BoolToVisibilityConverter x:Key="BoolVisConverter"/>
     </UserControl.Resources>
 
     <ListBox ItemsSource="{Binding Games}"
@@ -56,18 +57,25 @@
                                    Margin="0,2,0,0"/>
                     </StackPanel>
 
-                    <!-- Chunk count -->
+                    <!-- Chunk count (ul.cfg games) -->
                     <TextBlock Grid.Column="3" VerticalAlignment="Center" Margin="10,0"
-                               Foreground="#8888AA" FontSize="12">
+                               Foreground="#8888AA" FontSize="12"
+                               Visibility="{Binding IsDirectIso, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}">
                         <Run Text="{Binding ChunkCount, Mode=OneWay}"/>
                         <Run Text=" parts"/>
                     </TextBlock>
 
-                    <!-- CRC -->
+                    <!-- ISO badge (direct ISO games) -->
+                    <TextBlock Grid.Column="3" Text="ISO" VerticalAlignment="Center" Margin="10,0"
+                               Foreground="#88AADD" FontSize="12" FontWeight="SemiBold"
+                               Visibility="{Binding IsDirectIso, Converter={StaticResource BoolVisConverter}}"/>
+
+                    <!-- CRC (only for ul.cfg games) -->
                     <TextBlock Grid.Column="4" Text="{Binding CrcHex}"
                                VerticalAlignment="Center" FontSize="11"
                                Foreground="#666688" FontFamily="Consolas"
-                               Margin="0,0,4,0"/>
+                               Margin="0,0,4,0"
+                               Visibility="{Binding IsDirectIso, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}"/>
                 </Grid>
             </DataTemplate>
         </ListBox.ItemTemplate>

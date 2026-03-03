@@ -74,6 +74,69 @@ public static class IsoSplitterService
         return chunkCount;
     }
 
+    public static async Task<string> CopyIsoAsync(
+        string isoPath,
+        string usbRoot,
+        string displayName,
+        string gameId,
+        Models.MediaType mediaType,
+        IProgress<double>? progress = null,
+        CancellationToken ct = default,
+        IProgress<string>? statusProgress = null)
+    {
+        string folder = mediaType == Models.MediaType.CD ? "CD" : "DVD";
+        string targetDir = Path.Combine(usbRoot, folder);
+        Directory.CreateDirectory(targetDir);
+
+        string isoFileName = $"{gameId}.{displayName}.iso";
+        string targetPath = Path.Combine(targetDir, isoFileName);
+
+        var fi = new FileInfo(isoPath);
+        long totalSize = fi.Length;
+
+        statusProgress?.Report($"Copying to /{folder}...");
+
+        var buffer = new byte[BufferSize];
+        long totalBytesRead = 0;
+
+        using var input = new FileStream(isoPath, FileMode.Open, FileAccess.Read, FileShare.Read, BufferSize, FileOptions.SequentialScan);
+        using var output = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None, BufferSize, FileOptions.SequentialScan);
+
+        // Pre-allocate to reduce fragmentation
+        output.SetLength(totalSize);
+
+        while (totalBytesRead < totalSize)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            int bytesRead = await input.ReadAsync(buffer.AsMemory(0, buffer.Length), ct);
+            if (bytesRead == 0) break;
+
+            await output.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
+            totalBytesRead += bytesRead;
+            progress?.Report((double)totalBytesRead / totalSize);
+        }
+
+        return isoFileName;
+    }
+
+    public static void DeleteIso(string usbRoot, string isoFileName, Models.MediaType mediaType)
+    {
+        string folder = mediaType == Models.MediaType.CD ? "CD" : "DVD";
+        string path = Path.Combine(usbRoot, folder, isoFileName);
+        if (File.Exists(path))
+            File.Delete(path);
+    }
+
+    public static void RenameIso(string usbRoot, string oldFileName, string newFileName, Models.MediaType mediaType)
+    {
+        string folder = mediaType == Models.MediaType.CD ? "CD" : "DVD";
+        string oldPath = Path.Combine(usbRoot, folder, oldFileName);
+        string newPath = Path.Combine(usbRoot, folder, newFileName);
+        if (File.Exists(oldPath))
+            File.Move(oldPath, newPath);
+    }
+
     public static void DeleteChunks(string outputDir, string gameName, string gameId, byte chunkCount)
     {
         string crcHex = OplCrc32.ComputeHex(gameName);
