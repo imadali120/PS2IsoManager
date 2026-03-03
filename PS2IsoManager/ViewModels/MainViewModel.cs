@@ -156,10 +156,24 @@ public class MainViewModel : ViewModelBase
         {
             string fileName = Path.GetFileName(filePath);
             var match = IsoFileNameRegex.Match(fileName);
-            if (!match.Success) continue;
 
-            string gameId = match.Groups[1].Value.ToUpperInvariant();
-            string displayName = match.Groups[2].Value;
+            string gameId;
+            string displayName;
+
+            if (match.Success)
+            {
+                gameId = match.Groups[1].Value.ToUpperInvariant();
+                displayName = match.Groups[2].Value;
+            }
+            else
+            {
+                // Non-OPL-named ISO — try to extract game ID from the ISO itself
+                string? extractedId = Iso9660Reader.ExtractGameId(filePath);
+                if (extractedId == null) continue;
+
+                gameId = extractedId;
+                displayName = Path.GetFileNameWithoutExtension(fileName);
+            }
 
             if (loadedGameIds.Contains(gameId)) continue;
 
