@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 150">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1A1A2E"/>
+      <stop offset="100%" style="stop-color:#16213E"/>
+    </linearGradient>
+    <radialGradient id="disc" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#0F3460"/>
+      <stop offset="30%" style="stop-color:#E94560"/>
+      <stop offset="50%" style="stop-color:#0F3460"/>
+      <stop offset="100%" style="stop-color:#16213E"/>
+    </radialGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="150" rx="12" fill="url(#bg)"/>
+  <rect x="1" y="1" width="598" height="148" rx="11" fill="none" stroke="#2A2A4A" stroke-width="1"/>
+
+  <!-- PS2 Disc Icon -->
+  <circle cx="75" cy="75" r="32" fill="url(#disc)" filter="url(#glow)"/>
+  <circle cx="75" cy="75" r="8" fill="#1A1A2E"/>
+  <circle cx="75" cy="75" r="32" fill="none" stroke="#2A2A4A" stroke-width="0.5"/>
+
+  <!-- Title -->
+  <text x="130" y="65" font-family="Segoe UI, Arial, sans-serif" font-size="32" font-weight="700" fill="#E0E0E0">PS2 ISO Manager</text>
+
+  <!-- Subtitle -->
+  <text x="130" y="95" font-family="Segoe UI, Arial, sans-serif" font-size="14" fill="#8888AA">Split PS2 ISOs for OPL/USBExtreme</text>
+
+  <!-- Accent line -->
+  <rect x="130" y="105" width="60" height="3" rx="1.5" fill="#E94560"/>
+
+  <!-- Tags -->
+  <rect x="130" y="118" width="50" height="20" rx="4" fill="#0F3460"/>
+  <text x="155" y="132" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#88AADD" text-anchor="middle">.NET 8</text>
+
+  <rect x="188" y="118" width="40" height="20" rx="4" fill="#0F3460"/>
+  <text x="208" y="132" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#88AADD" text-anchor="middle">WPF</text>
+
+  <rect x="236" y="118" width="52" height="20" rx="4" fill="#0F3460"/>
+  <text x="262" y="132" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#88AADD" text-anchor="middle">MVVM</text>
+
+  <rect x="296" y="118" width="75" height="20" rx="4" fill="#0F3460"/>
+  <text x="333" y="132" font-family="Segoe UI, Arial, sans-serif" font-size="10" fill="#88AADD" text-anchor="middle">Open Source</text>
+</svg>
