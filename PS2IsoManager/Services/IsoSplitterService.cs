@@ -32,9 +32,13 @@ public static class IsoSplitterService
             string chunkName = $"ul.{crcHex}.{gameId}.{part:X2}";
             string chunkPath = Path.Combine(outputDir, chunkName);
 
-            using var output = new FileStream(chunkPath, FileMode.Create, FileAccess.Write, FileShare.None, BufferSize, FileOptions.SequentialScan);
+            long chunkSize = Math.Min(ChunkSize, totalSize - totalBytesRead);
 
-            long bytesRemaining = Math.Min(ChunkSize, totalSize - totalBytesRead);
+            using var output = new FileStream(chunkPath, FileMode.Create, FileAccess.Write, FileShare.None, BufferSize, FileOptions.SequentialScan);
+            // Pre-allocate the full chunk size so FAT32 assigns contiguous sectors
+            output.SetLength(chunkSize);
+
+            long bytesRemaining = chunkSize;
             while (bytesRemaining > 0)
             {
                 ct.ThrowIfCancellationRequested();
