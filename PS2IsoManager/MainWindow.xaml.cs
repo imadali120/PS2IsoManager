@@ -34,12 +34,12 @@ public partial class MainWindow : Window
         if (WindowState == WindowState.Maximized)
         {
             WindowState = WindowState.Normal;
-            MaxButton.Content = "\u25A1";
+            MaxButton.Content = "\uE922"; // Maximize icon
         }
         else
         {
             WindowState = WindowState.Maximized;
-            MaxButton.Content = "\u274D";
+            MaxButton.Content = "\uE923"; // Restore icon
         }
     }
 

@@ -5,6 +5,7 @@
         xmlns:views="clr-namespace:PS2IsoManager.Views"
         xmlns:converters="clr-namespace:PS2IsoManager.Converters"
         Title="PS2 ISO Manager"
+        Icon="app-icon.ico"
         Width="1100" Height="700"
         MinWidth="800" MinHeight="500"
         WindowStartupLocation="CenterScreen"
@@ -59,13 +60,13 @@
                                    FontSize="14" FontWeight="SemiBold" Foreground="#E0E0E0"/>
                     </StackPanel>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,8,0">
-                        <Button Content="—" Click="MinimizeButton_Click" Width="36" Height="28"
-                                Background="Transparent" FontSize="14" ToolTip="Minimize"/>
-                        <Button x:Name="MaxButton" Content="☐" Click="MaximizeButton_Click" Width="36" Height="28"
-                                Background="Transparent" FontSize="14" ToolTip="Maximize"/>
-                        <Button Content="✕" Click="CloseButton_Click" Width="36" Height="28"
-                                Background="Transparent" FontSize="14" ToolTip="Close"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,4,0">
+                        <Button Content="&#xE921;" Click="MinimizeButton_Click"
+                                Style="{StaticResource ChromeButton}" ToolTip="Minimize"/>
+                        <Button x:Name="MaxButton" Content="&#xE922;" Click="MaximizeButton_Click"
+                                Style="{StaticResource ChromeButton}" ToolTip="Maximize"/>
+                        <Button Content="&#xE8BB;" Click="CloseButton_Click"
+                                Style="{StaticResource ChromeCloseButton}" ToolTip="Close"/>
                     </StackPanel>
                 </Grid>
             </Border>
