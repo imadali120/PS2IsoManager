@@ -1,5 +1,7 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using PS2IsoManager.Services;
 using PS2IsoManager.ViewModels;
 
 namespace PS2IsoManager;
@@ -46,6 +48,20 @@ public partial class MainWindow : Window
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void ThemeButton_Click(object sender, RoutedEventArgs e)
+    {
+        ThemeMenu.IsOpen = true;
+    }
+
+    private void ThemeMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem item && item.Tag is string tag)
+        {
+            if (Enum.TryParse<AppTheme>(tag, out var theme))
+                ThemeManager.ApplyTheme(theme);
+        }
     }
 
     private void Window_DragOver(object sender, DragEventArgs e)

@@ -36,7 +36,7 @@ No more hunting for ancient, sketchy USBUtil downloads. This is open-source, bui
 - **Auto-detect Game ID** by reading SYSTEM.CNF from the ISO (ISO9660 parsing)
 - **ul.cfg management** — add, delete, and rename games with proper binary record handling
 - **Cover art download** from the [ps2-covers](https://github.com/xlenore/ps2-covers) GitHub archive
-- **OPL-style dark theme** — feels right at home if you've used OPL
+- **4 selectable themes** — OPL Dark, Midnight, Light, and Cosmic — switch at runtime, persisted across sessions
 - **Drag & drop** ISO files directly onto the window
 - **Keyboard shortcuts** — `Ctrl+A` add, `F2` rename, `Del` delete, `F5` refresh
 - **Remembers your folder** across sessions
@@ -126,7 +126,8 @@ PS2IsoManager/
 │   ├── UlCfgService.cs           # ul.cfg binary read/write
 │   ├── IsoSplitterService.cs     # Async ISO chunking with progress
 │   ├── Iso9660Reader.cs          # ISO9660 → SYSTEM.CNF → Game ID
-│   └── CoverArtService.cs        # Cover art downloader
+│   ├── CoverArtService.cs        # Cover art downloader
+│   └── ThemeManager.cs           # Runtime theme switching + persistence
 ├── ViewModels/
 │   ├── ViewModelBase.cs          # INotifyPropertyChanged
 │   ├── RelayCommand.cs           # ICommand implementation
@@ -138,7 +139,12 @@ PS2IsoManager/
 │   └── ProgressDialog.xaml       # Split progress with cancel
 ├── Converters/                   # WPF value converters
 ├── Resources/Themes/
-│   └── OplDarkTheme.xaml         # Full dark theme
+│   ├── BaseStyles.xaml           # Shared styles (all themes)
+│   └── Colors/                   # Per-theme color palettes
+│       ├── OplDarkColors.xaml
+│       ├── MidnightColors.xaml
+│       ├── LightColors.xaml
+│       └── CosmicColors.xaml
 ├── MainWindow.xaml               # Shell with custom chrome
 └── App.xaml                      # Entry point + theme loading
 ```

@@ -9,7 +9,8 @@
         ResizeMode="NoResize"
         ShowInTaskbar="False">
 
-    <Border Background="#1A1A2E" CornerRadius="8" BorderBrush="#2A2A4A" BorderThickness="1"
+    <Border Background="{DynamicResource BackgroundBrush}" CornerRadius="8"
+            BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
             Margin="8">
         <Border.Effect>
             <DropShadowEffect Color="Black" Opacity="0.6" BlurRadius="16" ShadowDepth="2"/>
@@ -24,7 +25,7 @@
             </Grid.RowDefinitions>
 
             <TextBlock x:Name="MessageText" Grid.Row="0" Text="Splitting ISO..."
-                       FontSize="15" FontWeight="SemiBold" Foreground="#E0E0E0"
+                       FontSize="15" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"
                        Margin="0,0,0,12"/>
 
             <ProgressBar x:Name="Progress" Grid.Row="1" Height="8"
@@ -32,13 +33,13 @@
                          Margin="0,0,0,8"/>
 
             <TextBlock x:Name="PercentText" Grid.Row="2" Text="0%"
-                       FontSize="12" Foreground="#8888AA"
+                       FontSize="12" Foreground="{DynamicResource TextDimBrush}"
                        HorizontalAlignment="Right"/>
 
             <Button x:Name="CancelButton" Grid.Row="3" Content="Cancel"
                     HorizontalAlignment="Right" VerticalAlignment="Bottom"
                     Padding="16,6" Click="CancelButton_Click"
-                    Background="#8B0000"/>
+                    Background="{DynamicResource DangerBrush}"/>
         </Grid>
     </Border>
 </Window>

@@ -26,11 +26,11 @@
 
                     <!-- Cover art thumbnail -->
                     <Border Grid.Column="0" Width="40" Height="52" CornerRadius="3"
-                            Background="#0F3460" Margin="0,0,10,0" ClipToBounds="True">
+                            Background="{DynamicResource AccentBrush}" Margin="0,0,10,0" ClipToBounds="True">
                         <Grid>
                             <!-- Placeholder icon when no cover -->
                             <TextBlock Text="&#xE7F4;" FontFamily="Segoe MDL2 Assets"
-                                       FontSize="18" Foreground="#334466"
+                                       FontSize="18" Foreground="{DynamicResource AccentDimBrush}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             <Image Source="{Binding CoverImage}" Stretch="UniformToFill"
                                    RenderOptions.BitmapScalingMode="HighQuality">
@@ -42,24 +42,24 @@
                     </Border>
 
                     <!-- Media type badge -->
-                    <Border Grid.Column="1" Background="#0F3460" CornerRadius="3"
+                    <Border Grid.Column="1" Background="{DynamicResource AccentBrush}" CornerRadius="3"
                             Padding="6,2" Margin="0,0,10,0" VerticalAlignment="Center">
                         <TextBlock Text="{Binding Media, Converter={StaticResource MediaTypeConverter}}"
                                    FontSize="11" FontWeight="SemiBold"
-                                   Foreground="#88AADD"/>
+                                   Foreground="{DynamicResource AccentTextBrush}"/>
                     </Border>
 
                     <!-- Game name + ID -->
                     <StackPanel Grid.Column="2" VerticalAlignment="Center">
                         <TextBlock Text="{Binding DisplayName}" FontSize="14" FontWeight="Medium"
                                    TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Text="{Binding GameId}" FontSize="11" Foreground="#8888AA"
+                        <TextBlock Text="{Binding GameId}" FontSize="11" Foreground="{DynamicResource TextDimBrush}"
                                    Margin="0,2,0,0"/>
                     </StackPanel>
 
                     <!-- Chunk count (ul.cfg games) -->
                     <TextBlock Grid.Column="3" VerticalAlignment="Center" Margin="10,0"
-                               Foreground="#8888AA" FontSize="12"
+                               Foreground="{DynamicResource TextDimBrush}" FontSize="12"
                                Visibility="{Binding IsDirectIso, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}">
                         <Run Text="{Binding ChunkCount, Mode=OneWay}"/>
                         <Run Text=" parts"/>
@@ -67,13 +67,13 @@
 
                     <!-- ISO badge (direct ISO games) -->
                     <TextBlock Grid.Column="3" Text="ISO" VerticalAlignment="Center" Margin="10,0"
-                               Foreground="#88AADD" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{DynamicResource AccentTextBrush}" FontSize="12" FontWeight="SemiBold"
                                Visibility="{Binding IsDirectIso, Converter={StaticResource BoolVisConverter}}"/>
 
                     <!-- CRC (only for ul.cfg games) -->
                     <TextBlock Grid.Column="4" Text="{Binding CrcHex}"
                                VerticalAlignment="Center" FontSize="11"
-                               Foreground="#666688" FontFamily="Consolas"
+                               Foreground="{DynamicResource TextVeryDimBrush}" FontFamily="Consolas"
                                Margin="0,0,4,0"
                                Visibility="{Binding IsDirectIso, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}"/>
                 </Grid>

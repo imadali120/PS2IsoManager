@@ -21,25 +21,16 @@
         </Image>
 
         <!-- Gradient overlay to blend edges -->
-        <Border>
-            <Border.Background>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#CC1A1A2E" Offset="0"/>
-                    <GradientStop Color="#881A1A2E" Offset="0.3"/>
-                    <GradientStop Color="#881A1A2E" Offset="0.7"/>
-                    <GradientStop Color="#CC1A1A2E" Offset="1"/>
-                </LinearGradientBrush>
-            </Border.Background>
-        </Border>
+        <Border Background="{DynamicResource BackgroundOverlayBrush}"/>
 
         <!-- No selection placeholder -->
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                     Visibility="{Binding HasSelectedGame, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}">
             <TextBlock Text="&#xE7FC;" FontFamily="Segoe MDL2 Assets" FontSize="48"
-                       Foreground="#333355" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+                       Foreground="{DynamicResource SurfaceBrush}" HorizontalAlignment="Center" Margin="0,0,0,12"/>
             <TextBlock Text="Select a game to view details"
                        HorizontalAlignment="Center"
-                       Foreground="#666688" FontSize="14" FontStyle="Italic"/>
+                       Foreground="{DynamicResource TextVeryDimBrush}" FontSize="14" FontStyle="Italic"/>
         </StackPanel>
 
         <!-- Detail panel -->
@@ -50,13 +41,13 @@
                 <Border Width="210" Height="300" CornerRadius="6"
                         HorizontalAlignment="Center" Margin="0,10,0,20">
                     <Border.Effect>
-                        <DropShadowEffect Color="#E94560" Opacity="0.4" BlurRadius="24"
+                        <DropShadowEffect Color="{DynamicResource HighlightColor}" Opacity="0.4" BlurRadius="24"
                                           ShadowDepth="0"/>
                     </Border.Effect>
-                    <Border Background="#0F3460" CornerRadius="6" ClipToBounds="True">
+                    <Border Background="{DynamicResource AccentBrush}" CornerRadius="6" ClipToBounds="True">
                         <Grid>
                             <TextBlock Text="No Cover Art" HorizontalAlignment="Center"
-                                       VerticalAlignment="Center" Foreground="#666688"
+                                       VerticalAlignment="Center" Foreground="{DynamicResource TextVeryDimBrush}"
                                        FontSize="13"/>
                             <Image x:Name="CoverArtImage"
                                    Source="{Binding SelectedGame.CoverImage}"
@@ -75,7 +66,7 @@
                            HorizontalAlignment="Center" TextAlignment="Center"
                            Margin="0,0,0,8"/>
 
-                <Border Background="#AA16213E" CornerRadius="6" Padding="16" Margin="0,8">
+                <Border Background="{DynamicResource PanelTranslucentBrush}" CornerRadius="6" Padding="16" Margin="0,8">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
@@ -88,26 +79,26 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Game ID:" Foreground="#8888AA" Margin="0,4"/>
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Game ID:" Foreground="{DynamicResource TextDimBrush}" Margin="0,4"/>
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedGame.GameId}"
                                    FontFamily="Consolas" Margin="12,4" FontWeight="SemiBold"/>
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Media:" Foreground="#8888AA" Margin="0,4"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Media:" Foreground="{DynamicResource TextDimBrush}" Margin="0,4"/>
                         <TextBlock Grid.Row="1" Grid.Column="1"
                                    Text="{Binding SelectedGame.Media, Converter={StaticResource MediaTypeConverter}}"
                                    Margin="12,4"/>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Parts:" Foreground="#8888AA" Margin="0,4"
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Parts:" Foreground="{DynamicResource TextDimBrush}" Margin="0,4"
                                    Visibility="{Binding SelectedGame.IsDirectIso, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}"/>
                         <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedGame.ChunkCount}" Margin="12,4"
                                    Visibility="{Binding SelectedGame.IsDirectIso, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}"/>
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Format:" Foreground="#8888AA" Margin="0,4"
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Format:" Foreground="{DynamicResource TextDimBrush}" Margin="0,4"
                                    Visibility="{Binding SelectedGame.IsDirectIso, Converter={StaticResource BoolVisConverter}}"/>
                         <TextBlock Grid.Row="2" Grid.Column="1" Text="ISO (direct)" Margin="12,4"
                                    Visibility="{Binding SelectedGame.IsDirectIso, Converter={StaticResource BoolVisConverter}}"/>
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="CRC32:" Foreground="#8888AA" Margin="0,4"
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="CRC32:" Foreground="{DynamicResource TextDimBrush}" Margin="0,4"
                                    Visibility="{Binding SelectedGame.IsDirectIso, Converter={StaticResource BoolVisConverter}, ConverterParameter=Invert}"/>
                         <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedGame.CrcHex}"
                                    FontFamily="Consolas" Margin="12,4"
@@ -120,7 +111,7 @@
                     <Button Content="Download Art" Command="{Binding DownloadArtCommand}" Margin="4"/>
                     <Button Content="Rename" Command="{Binding RenameGameCommand}" Margin="4"/>
                     <Button Content="Delete" Command="{Binding DeleteGameCommand}" Margin="4"
-                            Background="#8B0000"/>
+                            Background="{DynamicResource DangerBrush}"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

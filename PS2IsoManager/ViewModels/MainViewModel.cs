@@ -541,6 +541,11 @@ public class MainViewModel : ViewModelBase
         LoadGames();
     }
 
+    private static System.Windows.Media.Brush FindBrush(string key)
+    {
+        return (System.Windows.Media.Brush)Application.Current.FindResource(key);
+    }
+
     private static string? PromptForInput(string title, string message, string defaultValue = "")
     {
         // Simple input dialog using WPF
@@ -559,11 +564,9 @@ public class MainViewModel : ViewModelBase
 
         var border = new System.Windows.Controls.Border
         {
-            Background = new System.Windows.Media.SolidColorBrush(
-                (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#1A1A2E")),
+            Background = FindBrush("BackgroundBrush"),
             CornerRadius = new CornerRadius(8),
-            BorderBrush = new System.Windows.Media.SolidColorBrush(
-                (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#2A2A4A")),
+            BorderBrush = FindBrush("BorderBrush"),
             BorderThickness = new Thickness(1),
             Margin = new Thickness(8)
         };
@@ -576,8 +579,7 @@ public class MainViewModel : ViewModelBase
         var msgBlock = new System.Windows.Controls.TextBlock
         {
             Text = message,
-            Foreground = new System.Windows.Media.SolidColorBrush(
-                (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#E0E0E0")),
+            Foreground = FindBrush("TextBrush"),
             TextWrapping = TextWrapping.Wrap,
             Margin = new Thickness(0, 0, 0, 12)
         };
@@ -604,8 +606,7 @@ public class MainViewModel : ViewModelBase
         var cancelBtn = new System.Windows.Controls.Button
         {
             Content = "Cancel", Padding = new Thickness(20, 6, 20, 6), Margin = new Thickness(4),
-            Background = new System.Windows.Media.SolidColorBrush(
-                (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#333355"))
+            Background = FindBrush("SurfaceBrush")
         };
 
         string? resultValue = null;

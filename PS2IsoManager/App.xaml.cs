@@ -1,6 +1,5 @@
-﻿using System.Configuration;
-using System.Data;
 using System.Windows;
+using PS2IsoManager.Services;
 
 namespace PS2IsoManager;
 
@@ -9,5 +8,9 @@ namespace PS2IsoManager;
 /// </summary>
 public partial class App : Application
 {
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+        ThemeManager.ApplyTheme(ThemeManager.LoadSavedTheme());
+    }
 }
-

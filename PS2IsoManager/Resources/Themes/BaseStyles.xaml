@@ -1,23 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <!-- OPL-Style Color Palette -->
-    <Color x:Key="BackgroundColor">#1A1A2E</Color>
-    <Color x:Key="PanelColor">#16213E</Color>
-    <Color x:Key="AccentColor">#0F3460</Color>
-    <Color x:Key="HighlightColor">#E94560</Color>
-    <Color x:Key="TextColor">#E0E0E0</Color>
-    <Color x:Key="TextDimColor">#8888AA</Color>
-    <Color x:Key="BorderColor">#2A2A4A</Color>
-
-    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
-    <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}"/>
-    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
-    <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource HighlightColor}"/>
-    <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
-    <SolidColorBrush x:Key="TextDimBrush" Color="{StaticResource TextDimColor}"/>
-    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
-
     <!-- Window Style -->
     <Style x:Key="DarkWindowStyle" TargetType="Window">
         <Setter Property="Background" Value="{StaticResource BackgroundBrush}"/>
@@ -30,7 +13,7 @@
     <!-- Window Chrome Button Style (minimize/maximize/close) -->
     <Style x:Key="ChromeButton" TargetType="Button">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="#9999BB"/>
+        <Setter Property="Foreground" Value="{StaticResource ChromeTextBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Width" Value="46"/>
         <Setter Property="Height" Value="32"/>
@@ -46,8 +29,8 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#33FFFFFF"/>
-                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource HoverOverlayBrush}"/>
+                            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="#55FFFFFF"/>
@@ -103,7 +86,7 @@
                             <Setter TargetName="border" Property="Background" Value="{StaticResource HighlightBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#C03050"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource HighlightPressedBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="border" Property="Opacity" Value="0.4"/>
@@ -158,7 +141,7 @@
                 <ControlTemplate TargetType="ListBoxItem">
                     <Border x:Name="border" Background="Transparent"
                             Padding="{TemplateBinding Padding}"
-                            BorderThickness="3,0,0,1" BorderBrush="#11FFFFFF">
+                            BorderThickness="3,0,0,1" BorderBrush="{StaticResource SubtleBorderBrush}">
                         <Border.RenderTransform>
                             <TranslateTransform x:Name="slideTransform" X="0"/>
                         </Border.RenderTransform>
@@ -166,10 +149,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#22FFFFFF"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource HoverOverlayBrush}"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#33E94560"/>
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource HighlightTintBrush}"/>
                             <Setter TargetName="border" Property="BorderThickness" Value="3,0,0,1"/>
                             <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource HighlightBrush}"/>
                         </Trigger>
@@ -247,10 +230,38 @@
         <Setter Property="Background" Value="{StaticResource PanelBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="1" CornerRadius="4" Padding="2">
+                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style TargetType="MenuItem">
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="border" Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}" CornerRadius="3">
+                        <ContentPresenter ContentSource="Header" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource HoverOverlayBrush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 </ResourceDictionary>
