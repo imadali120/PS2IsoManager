@@ -1,48 +1,59 @@
 namespace PS2IsoManager.Services;
 
+/// <summary>
+/// Exact replica of OPL's USBA_crc32 from usbsupport.c.
+/// The algorithm has quirks: the table is built with signed arithmetic,
+/// the initial CRC is the residual from the table-building loop, and
+/// index 255 of the table is never written (defaults to 0).
+/// </summary>
 public static class OplCrc32
 {
-    private const uint Polynomial = 0x04C11DB7;
-    private static readonly uint[] Table = BuildTable();
+    private static readonly uint[] CrcTab;
+    private static readonly int InitialCrc;
 
-    private static uint[] BuildTable()
+    static OplCrc32()
     {
-        var table = new uint[256];
-        for (uint i = 0; i < 256; i++)
+        CrcTab = new uint[256];
+        int crc = 0;
+        int count;
+
+        // Build table exactly as OPL does (signed int arithmetic)
+        for (int table = 256; table != 0; table--)
         {
-            uint crc = i << 24;
-            for (int j = 0; j < 8; j++)
+            crc = table << 23;
+            for (count = 8; count != 0; count--)
             {
-                // OPL's inverted branching: XOR when MSB is NOT set
-                if ((crc & 0x80000000) == 0)
-                    crc = (crc << 1) ^ Polynomial;
+                if (crc < 0) // signed: MSB set
+                    crc = crc << 1;
                 else
-                    crc <<= 1;
+                    crc = (crc << 1) ^ 0x04C11DB7;
             }
-            table[i] = crc;
+            int idx = 255 - table;
+            if (idx >= 0 && idx < 256)
+                CrcTab[idx] = (uint)crc;
         }
-        return table;
+        // CrcTab[255] is never written — stays 0 (matches OPL's uninitialized memory behavior)
+        // crc retains value from last table iteration (table=1)
+        InitialCrc = crc;
     }
 
     public static uint Compute(string gameName)
     {
-        // OPL pads the name into a 32-byte null buffer and processes name.Length + 1 bytes
-        // Extra byte for null terminator when name is exactly 32 chars
         var buffer = new byte[33];
         var nameBytes = System.Text.Encoding.ASCII.GetBytes(gameName);
         Array.Copy(nameBytes, buffer, Math.Min(nameBytes.Length, 32));
 
-        int length = nameBytes.Length + 1; // includes null terminator
-
-        uint crc = 0xFFFFFFFF;
-        for (int i = 0; i < length; i++)
+        // Replicate OPL's do-while loop: process bytes until null terminator (inclusive)
+        int crc = InitialCrc;
+        int count = 0;
+        byte b;
+        do
         {
-            // Index with 255 - tableIndex (OPL's non-standard indexing)
-            byte tableIndex = (byte)((crc >> 24) ^ buffer[i]);
-            crc = (crc << 8) ^ Table[255 - tableIndex];
-        }
+            b = buffer[count++];
+            crc = (int)(CrcTab[((uint)crc >> 24) ^ b] ^ (((uint)crc << 8) & 0xFFFFFF00u));
+        } while (b != 0);
 
-        return crc;
+        return (uint)crc;
     }
 
     public static string ComputeHex(string gameName)
